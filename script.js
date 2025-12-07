@@ -18,37 +18,37 @@ let finalTranscript = "";
 
 //start conversation with supabase
 
-async function startConversationIfNeeded(){
+async function startConversationIfNeeded() {
     //if conversation exist do nothing
     if (conversationId) return;
 
     //insert a new row in conversations
-    const {data, error} = await supabase
+    const { data, error } = await supabase
         .from("conversations")
         .insert([
             {
                 user_id: DEMO_USER_ID,
-            topic: "interview_Practice",
-            status: "active"
+                topic: "interview_Practice",
+                status: "active"
             }
         ])
         .select()
         .single();
 
-       if (error){
+    if (error) {
         console.error("Error starting conversation:", error);
         messageEl.textContent = "Error starting conversation: ";
         return;
-       }
-       
-       //save the conversation id for later messages
-         conversationId = data.id;
-         console.log("Conversation started with ID:", conversationId);
-} 
+    }
+
+    //save the conversation id for later messages
+    conversationId = data.id;
+    console.log("Conversation started with ID:", conversationId);
+}
 
 //save a user message into 'messages' table
 
-async function saveUserMessage(text){
+async function saveUserMessage(text) {
     if (!conversationId) {
         console.warn("No active conversation. Cannot save message.");
         return;
@@ -56,16 +56,16 @@ async function saveUserMessage(text){
 
     //insert a new row into "messages"
     const { data, error } = await supabase
-    .from("messages")
-    .insert([
-        {
-            conversation_id: conversationId,
-            sender: "user",
-            text: text
-        }
-    ])
-    .select()
-    .single();
+        .from("messages")
+        .insert([
+            {
+                conversation_id: conversationId,
+                sender: "user",
+                text: text
+            }
+        ])
+        .select()
+        .single();
 
     if (error) {
         console.error("Error saving user message:", error);
@@ -75,6 +75,8 @@ async function saveUserMessage(text){
     console.log("saved user message:", data);
 
 }
+
+//setup web speech API
 
 if (!SpeechRecognition) {
     statusEl.textContent = "Your browser does not support Speech Recognition.";
@@ -99,6 +101,12 @@ else {
         isListening = false;
         statusEl.textContent = "Status: Not listening.";
         startBtn.textContent = "Start Listening";
+
+        const textToSave = finalTranscript.trim();
+
+        if (textToSave.length > 0) {
+            saveUserMessage(textToSave);
+        }
     };
 
     recognition.onerror = (event) => {
@@ -128,17 +136,20 @@ else {
 }
 
 //start /stop button
-startBtn.addEventListener("click", () => {
+startBtn.addEventListener("click", async () => {
     if (!recognition) return;
 
     if (!isListening) {
         //start listening
-        finalTranscript ="";
+        await startConversationIfNeeded();
+        finalTranscript = "";
         outputEl.value = "";
+
+        //start listening
         recognition.start();
     }
 
-    else{
+    else {
         //stop listening
         recognition.stop();
     }
@@ -146,8 +157,9 @@ startBtn.addEventListener("click", () => {
 
 //  clearbutton
 clearBtn.addEventListener("click", () => {
-    finalTranscript ="";
+    finalTranscript = "";
     outputEl.value = "";
     statusEl.textContent = "Status: Not listening.";
     statusEl.classList.remove("error");
+    messageEl.textContent = "";
 });
