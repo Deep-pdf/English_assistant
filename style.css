@@ -1,0 +1,35 @@
+*body{
+    padding: 0;
+    margin: 0;
+}
+
+.main1{
+    height: 100vh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.box1{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.box2{
+    height: 200px;
+    width: 80%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 30px;
+}
+
+#output{
+    width: 70%;
+    height: 100px;
+}
