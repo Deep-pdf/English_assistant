@@ -1,3 +1,10 @@
+const SUPABASE_URL = "https://eeqkuibsrmxlkgmrvepw.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVlcWt1aWJzcm14bGtnbXJ2ZXB3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwODIzMTQsImV4cCI6MjA4MDY1ODMxNH0.56pZKFzBj9xPtJFCwuM8avhka51NYLRaqTAHruFivkw";
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let conversationId = null;
+const DEMO_USER_ID = "demo-user-1";
+
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 const startBtn = document.getElementById('start-btn');
 const clearBtn = document.getElementById('clear-btn');
@@ -8,6 +15,66 @@ const messageEl = document.getElementById("message");
 let recognition = null;
 let isListening = false;
 let finalTranscript = "";
+
+//start conversation with supabase
+
+async function startConversationIfNeeded(){
+    //if conversation exist do nothing
+    if (conversationId) return;
+
+    //insert a new row in conversations
+    const {data, error} = await supabase
+        .from("conversations")
+        .insert([
+            {
+                user_id: DEMO_USER_ID,
+            topic: "interview_Practice",
+            status: "active"
+            }
+        ])
+        .select()
+        .single();
+
+       if (error){
+        console.error("Error starting conversation:", error);
+        messageEl.textContent = "Error starting conversation: ";
+        return;
+       }
+       
+       //save the conversation id for later messages
+         conversationId = data.id;
+         console.log("Conversation started with ID:", conversationId);
+} 
+
+//save a user message into 'messages' table
+
+async function saveUserMessage(text){
+    if (!conversationId) {
+        console.warn("No active conversation. Cannot save message.");
+        return;
+    }
+
+    //insert a new row into "messages"
+    const { data, error } = await supabase
+    .from("messages")
+    .insert([
+        {
+            conversation_id: conversationId,
+            sender: "user",
+            text: text
+        }
+    ])
+    .select()
+    .single();
+
+    if (error) {
+        console.error("Error saving user message:", error);
+        messageEl.textContent = "failed to save message in database";
+        return;
+    }
+    console.log("saved user message:", data);
+
+}
 
 if (!SpeechRecognition) {
     statusEl.textContent = "Your browser does not support Speech Recognition.";
