@@ -91,3 +91,38 @@ Goals:
     return contents;
 }
 
+app.post('/api/chat', async (req, res) => {
+    try {
+        const { conversationId , userText } = req.body;
+
+        if (!conversationId || !userText || userText.trim()) {
+            return res.status(400).json({
+                error: "conbersationId and non-empty userText are required",
+            });
+    }
+
+    const trimmedUserText = userText.trim();
+
+    //save the user message into 'messages' table
+    const { data:userMsg, error: userMsgError } = await supabase
+        .from('messages')
+        .insert([
+            {
+                conversation_id: conversationId,
+                sender: 'user',
+                text: trimmedUserText,
+            }
+        ])
+        
+        .select()
+        .single();
+
+        if (userInsertError) {
+            console.error("Error inserting user message:", userInsertError);
+            return res.status(500).json({
+                error: "failed to save user message",
+            });
+        }
+
+        
+}
