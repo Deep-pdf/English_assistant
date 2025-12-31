@@ -91,38 +91,91 @@ Goals:
     return contents;
 }
 
-app.post('/api/chat', async (req, res) => {
-    try {
-        const { conversationId , userText } = req.body;
+app.post("/api/chat", async (req, res) => {
+  try {
+    const { conversationId, userText } = req.body;
 
-        if (!conversationId || !userText || userText.trim()) {
-            return res.status(400).json({
-                error: "conbersationId and non-empty userText are required",
-            });
+    // Basic validation
+    if (!conversationId || !userText || !userText.trim()) {
+      return res.status(400).json({
+        error: "conversationId and non-empty userText are required",
+      });
     }
 
     const trimmedUserText = userText.trim();
 
-    //save the user message into 'messages' table
-    const { data:userMsg, error: userMsgError } = await supabase
-        .from('messages')
-        .insert([
-            {
-                conversation_id: conversationId,
-                sender: 'user',
-                text: trimmedUserText,
-            }
-        ])
-        
-        .select()
-        .single();
+    // 1) Save the USER message into 'messages' table
+    const { data: userMsg, error: userInsertError } = await supabase
+      .from("messages")
+      .insert([
+        {
+          conversation_id: conversationId,
+          sender: "user",
+          text: trimmedUserText,
+        },
+      ])
+      .select()
+      .single();
 
-        if (userInsertError) {
-            console.error("Error inserting user message:", userInsertError);
-            return res.status(500).json({
-                error: "failed to save user message",
-            });
-        }
+    if (userInsertError) {
+      console.error("Error saving user message:", userInsertError);
+      return res.status(500).json({
+        error: "Failed to save user message to database",
+      });
+    }
 
-        
-}
+    // 2) Fetch recent messages for this conversation (including the one we just saved)
+    const messages = await getConversationMessages(conversationId);
+
+    // 3) Build Gemini 'contents' from these messages
+    const contents = buildGeminiContentsFromMessages(messages);
+
+    // 4) Call Gemini to generate a tutor response
+    const result = await geminiModel.generateContent({
+      contents,
+      generationConfig: {
+        temperature: 0.7,
+        maxOutputTokens: 512,
+      },
+    });
+
+    // 5) Extract text from Gemini response
+    const botText = result.response.text().trim();
+
+    // 6) Save BOT reply into 'messages' table
+    const { data: botMsg, error: botInsertError } = await supabase
+      .from("messages")
+      .insert([
+        {
+          conversation_id: conversationId,
+          sender: "bot",
+          text: botText,
+        },
+      ])
+      .select()
+      .single();
+
+    if (botInsertError) {
+      console.error("Error saving bot message:", botInsertError);
+      // Still continue, we can at least return botText
+    }
+
+    // 7) Return botText to the frontend
+    return res.json({ botText });
+  } catch (err) {
+    console.error("Unexpected error in /api/chat:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// 6. Test route (optional)
+
+app.get("/", (req, res) => {
+  res.send("Madam July backend (Gemini) is running 🚀");
+});
+
+// 7. Start server
+
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
+});
