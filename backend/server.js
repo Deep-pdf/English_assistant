@@ -1,181 +1,126 @@
-// 1.import and envireonment
+// 1. Load environment variables
+require("dotenv").config();
 
-require('dotenv').config(); //load config files
+const express = require("express");
+const cors = require("cors");
+const fetch = require("node-fetch");
+const { createClient } = require("@supabase/supabase-js");
 
-const express = require('express');
-const cors = require('cors');
-const { createCleint } = require("@supabase/supabase-js");
-const { GoogleGenerativeAI } = require("@google/generative-ai");
-
-// 2. initialize core services
-
+// 2. Initialize app
 const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(cors());
 
-//initialize supabase client
+// 3. Supabase SERVER client
 const supabase = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+// 4. Fetch recent messages
+async function getConversationMessages(conversationId, limit = 15) {
+  const { data, error } = await supabase
+    .from("messages")
+    .select("*")
+    .eq("conversation_id", conversationId)
+    .order("created_at", { ascending: true });
 
-const geminiModel = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash",
-});
-
-// fetch receent messages from DB
-
-async function getConversationMessages(conversationId, limit =20) {
-    const { data, error} = await supabase
-        .from('messages')
-        .select('*')
-        .eq('conversation_id', conversationId)
-        .order('created_at', { ascending: false })
-
-    if (error) {
-        console.error("Error fetching messages:", error);
-        throw new Error("failed to fetch messages from DB");
-    }
-
-    if (data.length > limit) {
-        return data.slice(data.length - limit);
-    }
-
-    return data;
+  if (error) throw error;
+  return data.slice(-limit);
 }
 
-function buildGeminiContentFromMessages(messages) {
-    const contents = [];
+// 5. Build Gemini REST contents
+function buildGeminiContents(messages) {
+  const contents = [];
 
-    // system instruction AI ke liye
-    const systemInstruction = `
-You are an English interview tutor.
+  contents.push({
+    role: "user",
+    parts: [
+      {
+        text:
+          "You are Madam July, an English interview tutor. Ask interview questions, gently correct grammar, and encourage the user."
+      }
+    ]
+  });
 
-Goals:
-- Act like a realistic job interviewer.
-- Ask relevant interview or follow-up questions based on the user's answers.
-- Help the user practice spoken English for interviews.
-- Gently correct grammar, vocabulary, and clarity.
-- After each user answer, respond with:
-  1) A short interviewer-style reply or next question.
-  2) Very brief feedback on their English (1–3 sentences).
-- Keep responses under 6–8 sentences overall.
-- Be friendly and encouraging.
-  `.trim();
-
+  for (const msg of messages) {
     contents.push({
-        role: "user",
-        parts: [{ text: systemInstruction }],
+      role: msg.sender === "user" ? "user" : "model",
+      parts: [{ text: msg.text }]
     });
+  }
 
-    // map DB messages to Gimini format
-
-    for (const msg of messages){
-        if (msg.sender === "user") {
-            contents.push({
-                role: "user",
-                parts: [{ text: msg.text }],
-            });
-        } else if (msg.sender === "bot"){
-            contents.push({
-                role: "model",
-                parts: [{text: msg.text}],
-            });
-        }
-    }
-
-    return contents;
+  return contents;
 }
 
+// 6. Chat endpoint
 app.post("/api/chat", async (req, res) => {
   try {
     const { conversationId, userText } = req.body;
 
-    // Basic validation
-    if (!conversationId || !userText || !userText.trim()) {
-      return res.status(400).json({
-        error: "conversationId and non-empty userText are required",
-      });
+    if (!conversationId || !userText?.trim()) {
+      return res.status(400).json({ error: "Invalid request" });
     }
 
-    const trimmedUserText = userText.trim();
-
-    // 1) Save the USER message into 'messages' table
-    const { data: userMsg, error: userInsertError } = await supabase
-      .from("messages")
-      .insert([
-        {
-          conversation_id: conversationId,
-          sender: "user",
-          text: trimmedUserText,
-        },
-      ])
-      .select()
-      .single();
-
-    if (userInsertError) {
-      console.error("Error saving user message:", userInsertError);
-      return res.status(500).json({
-        error: "Failed to save user message to database",
-      });
-    }
-
-    // 2) Fetch recent messages for this conversation (including the one we just saved)
-    const messages = await getConversationMessages(conversationId);
-
-    // 3) Build Gemini 'contents' from these messages
-    const contents = buildGeminiContentsFromMessages(messages);
-
-    // 4) Call Gemini to generate a tutor response
-    const result = await geminiModel.generateContent({
-      contents,
-      generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 512,
-      },
+    // Save user message
+    await supabase.from("messages").insert({
+      conversation_id: conversationId,
+      sender: "user",
+      text: userText.trim()
     });
 
-    // 5) Extract text from Gemini response
-    const botText = result.response.text().trim();
+    // Fetch conversation history
+    const messages = await getConversationMessages(conversationId);
 
-    // 6) Save BOT reply into 'messages' table
-    const { data: botMsg, error: botInsertError } = await supabase
-      .from("messages")
-      .insert([
-        {
-          conversation_id: conversationId,
-          sender: "bot",
-          text: botText,
-        },
-      ])
-      .select()
-      .single();
+    const contents = buildGeminiContents(messages);
 
-    if (botInsertError) {
-      console.error("Error saving bot message:", botInsertError);
-      // Still continue, we can at least return botText
+    console.log("Sending to Gemini:", JSON.stringify(contents, null, 2));
+
+    // 🔥 Gemini REST v1 call (THIS IS THE FIX)
+    const geminiRes = await fetch(
+      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contents })
+      }
+    );
+
+    const raw = await geminiRes.text();
+
+    if (!geminiRes.ok) {
+      console.error("Gemini error:", raw);
+      throw new Error("Gemini API failed");
     }
 
-    // 7) Return botText to the frontend
-    return res.json({ botText });
+    const geminiData = JSON.parse(raw);
+
+    const botText =
+      geminiData?.candidates?.[0]?.content?.parts?.[0]?.text ||
+      "Sorry, could you repeat that?";
+
+    // Save bot message
+    await supabase.from("messages").insert({
+      conversation_id: conversationId,
+      sender: "bot",
+      text: botText
+    });
+
+    res.json({ botText });
   } catch (err) {
-    console.error("Unexpected error in /api/chat:", err);
-    return res.status(500).json({ error: "Internal server error" });
+    console.error("CHAT ERROR:", err);
+    res.status(500).json({ error: err.message });
   }
 });
 
-// 6. Test route (optional)
-
-app.get("/", (req, res) => {
-  res.send("Madam July backend (Gemini) is running 🚀");
+// 7. Health check
+app.get("/", (_, res) => {
+  res.send("Madam July backend running 🚀");
 });
 
-// 7. Start server
-
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+// 8. Start server
+app.listen(port, () => {
+  console.log(`Server running on http://localhost:${port}`);
 });
