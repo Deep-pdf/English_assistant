@@ -1,126 +1,226 @@
-// 1. Load environment variables
-require("dotenv").config();
+// =========================================
+// 0. EARLY ENV LOAD (VERY IMPORTANT)
+// =========================================
+import "dotenv/config";
 
-const express = require("express");
-const cors = require("cors");
-const fetch = require("node-fetch");
-const { createClient } = require("@supabase/supabase-js");
+// =========================================
+// 1. IMPORTS
+// =========================================
+import express from "express";
+import cors from "cors";
+import { createClient } from "@supabase/supabase-js";
+import { GoogleGenAI } from "@google/genai";
 
-// 2. Initialize app
+// =========================================
+// 2. BASIC CHECKPOINT: ENV VALIDATION
+// =========================================
+console.log("✅ CHECKPOINT 0: Server booting");
+
+if (!process.env.SUPABASE_URL) {
+  throw new Error("❌ SUPABASE_URL missing in .env");
+}
+if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  throw new Error("❌ SUPABASE_SERVICE_ROLE_KEY missing in .env");
+}
+if (!process.env.GEMINI_API_KEY) {
+  throw new Error("❌ GEMINI_API_KEY missing in .env");
+}
+
+console.log("✅ CHECKPOINT 1: Environment variables loaded");
+
+// =========================================
+// 3. APP SETUP
+// =========================================
 const app = express();
-const port = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(cors());
 
-// 3. Supabase SERVER client
+console.log("✅ CHECKPOINT 2: Express initialized");
+
+// =========================================
+// 4. SUPABASE SERVER CLIENT
+// =========================================
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-// 4. Fetch recent messages
+console.log("✅ CHECKPOINT 3: Supabase client initialized");
+
+// =========================================
+// 5. GEMINI SDK CLIENT (WORKING VERSION)
+// =========================================
+const ai = new GoogleGenAI({
+  apiKey: process.env.GEMINI_API_KEY,
+});
+
+console.log("✅ CHECKPOINT 3.5: Gemini SDK initialized");
+
+// =========================================
+// 6. FETCH CONVERSATION MESSAGES
+// =========================================
 async function getConversationMessages(conversationId, limit = 15) {
+  console.log("➡️ CHECKPOINT 4: Fetching messages");
+
   const { data, error } = await supabase
     .from("messages")
     .select("*")
     .eq("conversation_id", conversationId)
     .order("created_at", { ascending: true });
 
-  if (error) throw error;
+  if (error) {
+    console.error("❌ CHECKPOINT 4 FAILED: Supabase fetch");
+    console.error(error);
+    throw error;
+  }
+
+  console.log("✅ CHECKPOINT 4 PASSED: Messages fetched =", data.length);
   return data.slice(-limit);
 }
 
-// 5. Build Gemini REST contents
-function buildGeminiContents(messages) {
-  const contents = [];
+// =========================================
+// 7. BUILD PROMPT FROM DB (SDK-FRIENDLY)
+// =========================================
+function buildPromptFromMessages(messages) {
+  console.log("➡️ CHECKPOINT 5: Building Gemini prompt");
 
-  contents.push({
-    role: "user",
-    parts: [
-      {
-        text:
-          "You are Madam July, an English interview tutor. Ask interview questions, gently correct grammar, and encourage the user."
-      }
-    ]
-  });
+  let prompt = `
+You are Madam July, an English interview tutor.
+Ask interview questions, gently correct grammar,
+and encourage the user.
+`;
 
   for (const msg of messages) {
-    contents.push({
-      role: msg.sender === "user" ? "user" : "model",
-      parts: [{ text: msg.text }]
-    });
+    if (msg.sender === "user") {
+      prompt += `\nUser: ${msg.text}`;
+    } else if (msg.sender === "bot") {
+      prompt += `\nTutor: ${msg.text}`;
+    }
   }
 
-  return contents;
+  console.log("✅ CHECKPOINT 5 PASSED: Prompt built");
+  return prompt;
 }
 
-// 6. Chat endpoint
+// =========================================
+// 8. CHAT ENDPOINT
+// =========================================
 app.post("/api/chat", async (req, res) => {
+  console.log("🟢 CHECKPOINT 6: /api/chat HIT");
+  console.log("REQ BODY:", req.body);
+
   try {
     const { conversationId, userText } = req.body;
 
-    if (!conversationId || !userText?.trim()) {
-      return res.status(400).json({ error: "Invalid request" });
+    // -------------------------------
+    // VALIDATION
+    // -------------------------------
+    console.log("➡️ CHECKPOINT 7: Validating request");
+
+    if (!conversationId || !userText || !userText.trim()) {
+      console.error("❌ CHECKPOINT 7 FAILED: Invalid input");
+      return res.status(400).json({ error: "Invalid input" });
     }
 
-    // Save user message
-    await supabase.from("messages").insert({
-      conversation_id: conversationId,
-      sender: "user",
-      text: userText.trim()
-    });
+    console.log("✅ CHECKPOINT 7 PASSED");
 
-    // Fetch conversation history
+    // -------------------------------
+    // SAVE USER MESSAGE
+    // -------------------------------
+    console.log("➡️ CHECKPOINT 8: Saving user message");
+
+    const { error: userErr } = await supabase
+      .from("messages")
+      .insert({
+        conversation_id: conversationId,
+        sender: "user",
+        text: userText.trim(),
+      });
+
+    if (userErr) {
+      console.error("❌ CHECKPOINT 8 FAILED");
+      console.error(userErr);
+      throw userErr;
+    }
+
+    console.log("✅ CHECKPOINT 8 PASSED");
+
+    // -------------------------------
+    // FETCH HISTORY
+    // -------------------------------
     const messages = await getConversationMessages(conversationId);
 
-    const contents = buildGeminiContents(messages);
+    // -------------------------------
+    // BUILD PROMPT
+    // -------------------------------
+    const prompt = buildPromptFromMessages(messages);
 
-    console.log("Sending to Gemini:", JSON.stringify(contents, null, 2));
+    console.log("➡️ CHECKPOINT 9: Sending to Gemini");
 
-    // 🔥 Gemini REST v1 call (THIS IS THE FIX)
-    const geminiRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contents })
-      }
-    );
-
-    const raw = await geminiRes.text();
-
-    if (!geminiRes.ok) {
-      console.error("Gemini error:", raw);
-      throw new Error("Gemini API failed");
-    }
-
-    const geminiData = JSON.parse(raw);
-
-    const botText =
-      geminiData?.candidates?.[0]?.content?.parts?.[0]?.text ||
-      "Sorry, could you repeat that?";
-
-    // Save bot message
-    await supabase.from("messages").insert({
-      conversation_id: conversationId,
-      sender: "bot",
-      text: botText
+    // -------------------------------
+    // GEMINI SDK CALL (STABLE)
+    // -------------------------------
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: prompt,
     });
 
+    const botText =
+      response?.text ||
+      "Sorry, could you repeat that?";
+
+    console.log("➡️ CHECKPOINT 10: Bot reply:", botText);
+
+    // -------------------------------
+    // SAVE BOT MESSAGE
+    // -------------------------------
+    console.log("➡️ CHECKPOINT 11: Saving bot message");
+
+    const { error: botErr } = await supabase
+      .from("messages")
+      .insert({
+        conversation_id: conversationId,
+        sender: "bot",
+        text: botText,
+      });
+
+    if (botErr) {
+      console.error("❌ CHECKPOINT 11 FAILED");
+      console.error(botErr);
+      throw botErr;
+    }
+
+    console.log("✅ CHECKPOINT 11 PASSED");
+
+    // -------------------------------
+    // RESPOND
+    // -------------------------------
+    console.log("✅ CHECKPOINT 12: Responding to frontend");
     res.json({ botText });
+
   } catch (err) {
-    console.error("CHAT ERROR:", err);
-    res.status(500).json({ error: err.message });
+    console.error("🔥 FINAL CRASH 🔥");
+    console.error(err);
+
+    res.json({
+      botText:
+        "Sorry, I'm having trouble generating a response right now. Please try again.",
+    });
   }
 });
 
-// 7. Health check
+// =========================================
+// 9. HEALTH CHECK
+// =========================================
 app.get("/", (_, res) => {
-  res.send("Madam July backend running 🚀");
+  res.send("✅ Madam July backend running");
 });
 
-// 8. Start server
-app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
+// =========================================
+// 10. START SERVER
+// =========================================
+app.listen(PORT, () => {
+  console.log(`🚀 CHECKPOINT FINAL: Server running on http://localhost:${PORT}`);
 });
