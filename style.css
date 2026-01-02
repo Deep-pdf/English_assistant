@@ -1,57 +1,344 @@
-*body{
-    padding: 0;
-    margin: 0;
+@import url("https://fonts.googleapis.com/css?family=DM+Serif+Display:400");
+
+/* Reset and Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-.main1{
-    height: 100vh;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+body {
+  font-family: 'DM Serif Display', serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Prevents scrolling */
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
 }
 
-h1{
-    padding: 0;
-    margin: 0;
+/* style for hamburger */
+
+.hamburger {
+  position: absolute;
+  top: 2.2vh;
+  /* was 24px */
+  right: 3.2vw;
+  /* was 61px */
+  width: 3.5vw;
+  /* was 68px */
+  height: auto;
 }
 
-.box1{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    height: 30%;
+input[type="checkbox"] {
+  -webkit-appearance: none;
+  display: none;
+  visibility: hidden;
 }
 
-
-
-.box2{
-    height: 200px;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-end;
-    gap: 30px;
+.bar {
+  display: block;
+  position: relative;
+  cursor: pointer;
+  width: 50px;
+  height: 40px;
 }
 
-#output{
-    width: 70%;
-    height: 100px;
+.bar span {
+  position: absolute;
+  width: 45px;
+  height: 7px;
+  background: #f1faee;
+  border-radius: 100px;
+  display: inline-block;
+  transition: 0.3s ease;
+  left: 0;
 }
 
-.box3{
-    height: 200px;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 30px;
+.bar span.top {
+  top: 0;
 }
 
-#bot-ans{
-    width: 70%;
-    height: 100px;
+.bar span.middle {
+  top: 17px;
+}
+
+.bar span.bottom {
+  bottom: 0;
+}
+
+input[type]:checked~span.top {
+  transform: rotate(45deg);
+  transform-origin: top left;
+  width: 48px;
+  left: 5px;
+}
+
+input[type]:checked~span.bottom {
+  transform: rotate(-45deg);
+  transform-origin: top left;
+  width: 48px;
+  bottom: -1px;
+  box-shadow: 0 0 10px #495057;
+}
+
+input[type]:checked~span.middle {
+  transform: translateX(-20px);
+  opacity: 0;
+}
+
+/* hamburger ended */
+
+/* Landing Page Styles */
+.landing-page {
+  background-color: #efcfe3;
+  /* Use relative sizing instead of fixed pixels */
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+  /* Ensures no scrollbars appear if elements slighty overflow */
+}
+
+/* CONVERSION LOGIC:
+   We converted fixed pixels to Viewport Height (vh) and Viewport Width (vw).
+   Based on 1920x1080 reference.
+*/
+
+.blur-background-1 {
+  position: absolute;
+  top: 57vh;
+  /* was 617px */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 110vw;
+  /* was 2132px */
+  height: 73vh;
+  /* was 791px */
+  background-color: #cdb4db;
+  border-radius: 50%;
+  filter: blur(100px);
+}
+
+.white-background {
+  position: absolute;
+  top: 64vh;
+  /* was 693px */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 106vw;
+  /* was 2040px */
+  height: 70vh;
+  /* was 757px */
+  background-color: #cdb4db;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.white-background::before {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  margin: auto;
+  width: 240px;
+  height: 320%;
+  background: linear-gradient(to right,
+      transparent 0%,
+      rgba(255, 255, 255, 0.9) 50%,
+      transparent 100%);
+  animation: spinLight 6s linear infinite;
+  filter: blur(6px);
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+/* rotation animation */
+@keyframes spinLight {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.nd-background {
+  position: absolute;
+  top: 68vh;
+  /* was 693px */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 106vw;
+  /* was 2040px */
+  height: 70vh;
+  /* was 757px */
+  /* background-color: #ffffff; */
+  border-radius: 50%;
+  overflow: hidden;
+
+    background: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #FFC2D1 40%,
+    #e6e6e6 100%
+  );
+
+}
+
+.logo-image {
+  position: absolute;
+  top: 22vh;
+  /* was 171px */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40vw;
+  height: auto;
+  max-height: 33vh;
+  object-fit: contain;
+}
+
+.header-text {
+  position: absolute;
+  top: 16vh;
+  /* was 171px */
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'DM Serif Display', serif;
+  font-weight: 400;
+  color: black;
+  /* Scale font size with viewport width */
+  font-size: 2vw;
+  /* was 55px */
+  text-align: center;
+  letter-spacing: 0;
+  line-height: normal;
+  white-space: nowrap;
+}
+
+.subheader-text {
+  position: absolute;
+  top: 44vh;
+  /* was 471px */
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'DM Serif Display', serif;
+  font-weight: 400;
+  color: black;
+  font-size: 2vw;
+  /* was 55px */
+  text-align: center;
+  letter-spacing: 0;
+  line-height: normal;
+  white-space: nowrap;
+}
+
+.microphone-icon {
+  position: absolute;
+  top: 58vh;
+  /* was 629px */
+  left: 55%;
+  /* converted from fixed pixel left */
+  width: 4.3vw;
+  /* was 83px */
+  height: auto;
+}
+
+.page-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 10vh;
+  /* was 105px */
+  background-color: #e27396;
+}
+
+/* Button Styles */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  white-space: nowrap;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+  cursor: pointer;
+  border: none;
+  outline: none;
+}
+
+.start-talking-button {
+  position: absolute;
+  top: 59vh;
+  /* was 640px */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20vw;
+  /* was 388px */
+  height: 11vh;
+  /* was 121px */
+  background-color: #ea9ab2;
+  border-radius: 21px;
+  font-family: 'DM Serif Display', serif;
+  font-weight: 400;
+  color: black;
+  font-size: 2vw;
+  /* was 40px */
+  text-align: center;
+  line-height: normal;
+}
+
+.start-talking-button:hover {
+  background-color: #e688a5;
+}
+
+.action-buttons-container {
+  position: absolute;
+  top: 75.5vh;
+  /* was 816px */
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 2.3vw;
+  /* was 44px */
+}
+
+.action-button {
+  width: 15.6vw;
+  /* was 300px */
+  height: 8.7vh;
+  /* was 94px */
+  background-color: #bde0fe;
+  border-radius: 21px;
+  font-family: 'DM Serif Display', serif;
+  font-weight: 400;
+  color: black;
+  font-size: 1.25vw;
+  /* was 24px */
+  text-align: center;
+  line-height: normal;
+}
+
+.action-button:hover {
+  background-color: #a8d5fd;
+}
+
+.navbar-button {
+  position: absolute;
+  top: 2.2vh;
+  /* was 24px */
+  right: 3.2vw;
+  /* was 61px */
+  width: 3.5vw;
+  /* was 68px */
+  height: auto;
+  background-color: transparent;
+}
+
+.navbar-button img {
+  width: 100%;
+  height: 100%;
 }
