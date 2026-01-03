@@ -1,29 +1,31 @@
+@import url('https://fonts.googleapis.com/css2?family=Aldrich&family=Alex+Brush&family=Anton&family=Bebas+Neue&family=DM+Serif+Text:ital@0;1&family=Indie+Flower&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Karantina:wght@300;400;700&family=Noto+Serif+Dives+Akuru&family=Outfit:wght@100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Public+Sans:ital,wght@0,100..900;1,100..900&family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&family=Saira+Condensed:wght@100;200;300;400;500;600;700;800;900&family=Saira+Extra+Condensed:wght@100;200;300;400;500;600;700;800;900&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap');
+
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    /* overflow: hidden; */
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  /* overflow: hidden; */
 }
 
 body {
-    font-family: 'DM Serif Display', serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    /* Prevents scrolling */
-    overflow: hidden;
-    /* width: 100%; */
-    height: 100vh;
+  font-family: 'DM Serif Display', serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Prevents scrolling */
+  overflow: hidden;
+  /* width: 100%; */
+  height: 100vh;
 }
 
-* style for hamburger */
+/* style for hamburger */
 
 .hamburger {
   position: absolute;
   top: 2vh;
   right: 3.2vw;
-  /* was 61px */
-  width: 2vw;
-  height: auto;
+  /* width: 1%; */
+  height: 5%;
+  scale: calc(0.8);
 }
 
 input[type="checkbox"] {
@@ -85,55 +87,156 @@ input[type]:checked~span.middle {
 
 /* hamburger ended */
 
-header{
+header {
+  position: absolute;
   height: 10%;
+  top: 0;
   width: 100%;
   background-color: #E27396;
 }
 
 hero {
-    height: 100dvh;
-    width: 100vw;
-    display: flex;
-    justify-content: center;
-    overflow: hidden;
-    position: relative;
-    background-color: #FFA8DE;
+  height: 100dvh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  position: relative;
+  background-color: #FFA8DE;
+}
+
+.hey {
+  position: absolute;
+  top: 15vh;
+  z-index: 10;
+  font-size: clamp(1rem, 1.7vw, 4rem);
+  color: #F11E43;
+}
+
+.title-text {
+  font-family: "Bebas Neue", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  top: 20vh;
+  position: absolute;
+  width: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+  filter: drop-shadow(2px 2px 2px rgba(0, 0, 0, 0.538));
+}
+
+.help {
+  position: absolute;
+  top: 42vh;
+  z-index: 10;
+  font-size: clamp(1rem, 1.7vw, 4rem);
+  color: #e3002a;
+}
+
+.logo2 {
+  width: 20%;
+  height: auto;
+  position: relative;
+  z-index: 11;
+}
+
+.aurora-text {
+  font-size: clamp(5rem, 10vw, 12rem);
+  font-weight: 400;
+  margin: 0;
+  z-index: 9;
+  width: 80%;
+  text-align: center;
+  /* letter-spacing: -0.05em; */
+  /* 1. MAKE TEXT TRANSPARENT */
+  color: transparent;
+
+  /* 2. DEFINE THE AURORA AS BACKGROUND GRADIENTS */
+  /* We create 4 blobs using radial-gradient */
+  background-image:
+    radial-gradient(circle at 20% 30%, #F11E43 10%, transparent 50%),
+    /* Cyan */
+    radial-gradient(circle at 80% 20%, #facc15 10%, transparent 50%),
+    /* Yellow */
+    radial-gradient(circle at 20% 80%, #ff4400 10%, transparent 100%),
+    /* Green */
+    radial-gradient(circle at 80% 80%, #ff7700 10%, transparent 50%);
+  /* Purple */
+
+  /* 3. CLIP THE BACKGROUND TO THE TEXT SHAPE */
+  background-clip: text;
+  -webkit-background-clip: text;
+
+  /* 4. ANIMATE THE BACKGROUND SIZE & POSITION */
+  background-size: 180% 180%;
+  animation: aurora-move 8s ease-in-out infinite alternate;
+  /* Optional: Adds a soft white glow around the letters */
+  filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.3));
+}
+
+@keyframes aurora-move {
+  0% {
+    background-position: 0% 0%;
+    background-size: 150% 150%;
+  }
+
+  25% {
+    background-position: 100% 0%;
+  }
+
+  50% {
+    background-position: 100% 100%;
+    background-size: 200% 200%;
+    /* Blobs grow/shrink */
+  }
+
+  75% {
+    background-position: 0% 100%;
+  }
+
+  100% {
+    background-position: 0% 0%;
+    background-size: 150% 150%;
+  }
 }
 
 .H-circle {
-    position: absolute;
-    top: 65%;
-    height: 100%;
-    width: 120%;
-    aspect-ratio: 1 / 1;
+  position: absolute;
+  top: 65%;
+  height: 100%;
+  width: 120%;
+  aspect-ratio: 1 / 1;
 
-    border-radius: 50%;
-    z-index: 1;
+  border-radius: 50%;
+  z-index: 1;
 
-    background: linear-gradient(180deg,
-            #ffffff 0%,
-            #FFC2D1 40%,
-            #e6e6e6 100%);
+  background: linear-gradient(180deg,
+      #ffffff 0%,
+      #FFC2D1 40%,
+      #e6e6e6 100%);
 }
 
-.white-circle{
-        position: absolute;
-    top: 62%;
-    height: 100%;
-    width: 120%;
-    aspect-ratio: 1 / 1;
+.white-circle {
+  position: absolute;
+  top: 62%;
+  height: 100%;
+  width: 120%;
+  aspect-ratio: 1 / 1;
 
-    border-radius: 50%;
-    /* z-index: 1; */
-    background-color: #cdb4db;
-    overflow: hidden;
-    filter: blur(10px); 
+  border-radius: 50%;
+  /* z-index: 1; */
+  background-color: #cdb4db;
+  overflow: hidden;
+  filter: blur(10px);
 
 }
 
-.white-circle::before{
-      content: "";
+.white-circle::before {
+  content: "";
   position: absolute;
   inset: -40%;
   margin: auto;
@@ -143,12 +246,10 @@ hero {
       transparent 0%,
       rgba(255, 255, 255, 0.9) 50%,
       transparent 100%); */
-      background: linear-gradient(
-        transparent 0%,
-        #ffffff 50%,
-        transparent 100%
-      );
-    filter: blur(50px);
+  background: linear-gradient(transparent 0%,
+      #ffffff 50%,
+      transparent 100%);
+  filter: blur(50px);
   animation: spinLight 6s linear infinite;
 
   opacity: 1;
@@ -167,36 +268,237 @@ hero {
 }
 
 .blur-circle {
-    position: absolute;
-    top: 50vh;
-    left: 50%;
-    transform: translateX(-50%);
-    width:200%;
-    aspect-ratio: 1 / 1;
-    background-color: #cdb4db;
-    border-radius: 50%;
-    filter: blur(100px);
+  position: absolute;
+  top: 50vh;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200%;
+  aspect-ratio: 1 / 1;
+  background-color: #cdb4db;
+  border-radius: 50%;
+  filter: blur(100px);
+}
+
+.btn {
+  position: absolute;
+  left: 50%;
+  top: 60%;
+  transform: translateX(-50%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 18rem;
+  overflow: hidden;
+  /* margin-top: 80%; */
+  z-index: 11;
+  height: 5rem;
+  background-size: 300% 300%;
+  cursor: pointer;
+  backdrop-filter: blur(1rem);
+  border-radius: 5rem;
+  transition: 0.5s;
+  animation: gradient_301 5s ease infinite;
+  border: double 4px transparent;
+  background-image: linear-gradient(#fc33ff, #9a0036),
+    linear-gradient(
+      137.48deg,
+      #ffdb3b 10%,
+      #fe53bb 45%,
+      #8f51ea 67%,
+      #0044ff 87%
+    );
+  background-origin: border-box;
+  background-clip: content-box, border-box;
+}
+
+#container-stars {
+  position: absolute;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  transition: 0.5s;
+  backdrop-filter: blur(1rem);
+  border-radius: 5rem;
+}
+
+strong {
+  z-index: 11;
+  font-family:"Bebas Neue", sans-serif;
+  font-size: 25px;
+  letter-spacing: 5px;
+  color: #ffffff;
+  text-shadow: 0 0 4px white;
+}
+
+#glow {
+  position: absolute;
+  display: flex;
+  width: 12rem;
+}
+
+.circle {
+  width: 100%;
+  height: 30px;
+  filter: blur(2rem);
+  animation: pulse_3011 4s infinite;
+  z-index: -1;
+}
+
+.circle:nth-of-type(1) {
+  background: rgba(254, 83, 186, 0.636);
+}
+
+.circle:nth-of-type(2) {
+  background: rgba(142, 81, 234, 0.704);
+}
+
+.btn:hover #container-stars {
+  z-index: 1;
+  background-color: #212121;
+}
+
+.btn:hover {
+  transform: translateX(-50%) scale(1.1);
+}
+
+.btn:active {
+  border: double 4px #fe53bb;
+  background-origin: border-box;
+  background-clip: content-box, border-box;
+  animation: none;
+}
+
+.btn:active .circle {
+  background: #fe53bb;
+}
+
+#stars {
+  position: relative;
+  background: transparent;
+  width: 200rem;
+  height: 200rem;
+}
+
+#stars::after {
+  content: "";
+  position: absolute;
+  top: -10rem;
+  left: -100rem;
+  width: 100%;
+  height: 100%;
+  animation: animStarRotate 90s linear infinite;
+}
+
+#stars::after {
+  background-image: radial-gradient(#ffffff 1px, transparent 1%);
+  background-size: 50px 50px;
+}
+
+#stars::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -50%;
+  width: 170%;
+  height: 500%;
+  animation: animStar 60s linear infinite;
+}
+
+#stars::before {
+  background-image: radial-gradient(#ffffff 1px, transparent 1%);
+  background-size: 50px 50px;
+  opacity: 0.5;
+}
+
+@keyframes animStar {
+  from {
+    transform: translateY(0);
+  }
+
+  to {
+    transform: translateY(-135rem);
+  }
+}
+
+@keyframes animStarRotate {
+  from {
+    transform: rotate(360deg);
+  }
+
+  to {
+    transform: rotate(0);
+  }
+}
+
+@keyframes gradient_301 {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes pulse_3011 {
+  0% {
+    transform: scale(0.75);
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.7);
+  }
+
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 10px rgba(0, 0, 0, 0);
+  }
+
+  100% {
+    transform: scale(0.75);
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+  }
+}
+
+a{
+  text-decoration: none;
 }
 
 @media (max-width: 768px) {
-    .H-circle {
-        width: 200%;
-        /* stays wide */
-        aspect-ratio: 1 / 1;
-        top: 55%;
-    }
+  .H-circle {
+    width: 200%;
+    /* stays wide */
+    aspect-ratio: 1 / 1;
+    top: 55%;
+  }
 
-    .blur-circle {
-        width: 250%;
-        /* stays wide */
-        aspect-ratio: 1 / 1;
-        top: 40%;
-    }
+  .blur-circle {
+    width: 250%;
+    /* stays wide */
+    aspect-ratio: 1 / 1;
+    top: 40%;
+  }
 
-    .white-circle{
-        width: 205%;
-        /* stays wide */
-        aspect-ratio: 1 / 1;
-        top: 52%;
-    }
+  .white-circle {
+    width: 205%;
+    /* stays wide */
+    aspect-ratio: 1 / 1;
+    top: 52%;
+  }
+
+  .title-text {
+    width: 100%;
+    top: 22%;
+    flex-direction: column;
+  }
+
+  .hey{
+    top: 18%;
+  }
+
+  .help{
+    top: 43%;
+  }
 }
