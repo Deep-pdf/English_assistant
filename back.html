@@ -3,55 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Infinite Moving Grid</title>
+    <title>Trial</title>
+
     <style>
         body {
             margin: 0;
             padding: 0;
-            background-color: #050505; /* Dark background to see the grid */
+            background-color: #ff0000;
             height: 100vh;
             overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
 
-        /* THE GRID CONTAINER */
-        .infinite-grid {
+        video {
             position: absolute;
-            inset: 0; /* Full screen */
-            z-index: -1; /* Push to back */
-            
-            /* 1. Define the size of one grid square */
-            background-size: 50px 50px;
-
-            /* 2. Create the lines using gradients */
-            /* Vertical lines (to right) and Horizontal lines (to bottom) */
-            background-image: 
-                linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
-
-            /* 3. The Animation */
-            animation: moveGrid 2s linear infinite;
-        }
-
-        /* To make it infinite, we only need to move the background
-           by exactly ONE grid square size (50px). 
-           Once it hits 50px, it snaps back to 0, creating a perfect loop.
-        */
-        @keyframes moveGrid {
-            from {
-                background-position: 0 0;
-            }
-            to {
-                background-position: 50px 50px;
-            }
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 30%;
+            height: auto;
         }
     </style>
 </head>
 <body>
-
-    <div class="infinite-grid"></div>
-
+    <video autoplay loop muted playsinline>
+  <source src="frontend/assets/person1.webm" type="video/webm">
+</video>
 </body>
 </html>

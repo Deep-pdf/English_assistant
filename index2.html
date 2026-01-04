@@ -11,6 +11,11 @@
 <body>
     <hero>
         <header>
+
+            <div>
+                <img class="logo1" src="frontend/assets/cat4.png" alt="">
+            </div>
+
             <div class="hamburger">
                 <label class="bar" for="check">
                     <input type="checkbox" id="check">
@@ -41,7 +46,7 @@
         <div class="blur-circle"></div>
         <div class="white-circle"></div>
 
-        <a href="conversation.html">
+        <a href="conversation.html" id="start-link">
             <button type="button" class="btn">
 
                 <strong>Start Speaking</strong>
@@ -65,7 +70,29 @@
         </div>
 
         <div class="infinite-grid"></div>
+
+        <div class="friends">
+            <video class="p1 person" autoplay loop muted playsinline>
+                <source src="frontend/assets/person1.webm" type="video/webm">
+            </video>
+
+            <video class="p2 person" autoplay loop muted playsinline>
+                <source src="frontend/assets/person2.webm" type="video/webm">
+            </video>
+
+            <video class="p3 person" autoplay loop muted playsinline>
+                <source src="frontend/assets/person3.webm" type="video/webm">
+            </video>
+
+            <video class="p4 person" autoplay loop muted playsinline>
+                <source src="frontend/assets/person41.webm" type="video/webm">
+            </video>
+        </div>
     </hero>
+
+
+
+    <script src="script.js"></script>
 </body>
 
 </html>
