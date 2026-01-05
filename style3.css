@@ -17,42 +17,6 @@ body {
   height: 100vh;
 }
 
-/* default day theme */
-:root{
-  --bg1-color: #FFA8DE;
-  --text-color: #000000;
-  --hey-text: #bb0022;
-  --header: #E27396;
-  --linear-top: white;
-  --linear-bottom: #FFC2D1;
-  --blur-circle: #cdb4db;
-  --white-circle: #cdb4db;
-  --button-bg: #a4133c;
-  --button-hover: #ff90e8;
-  --button-hover-text: #000000;
-  --transDur: 0.3s;
-  --primaryT: hsl(48,90%,55%);
-  --primary: hsl(48,90%,65%);
-  --bg: var(--button-bg);
-  --start-btn1: #fc33ff;
-  --start-btn2: #9a0036;
-}
-
-body.dark{
-  --bg1-color: #240046;
-  --text-color: #ffffff;
-  --hey-text: #ffffff;
-  --header: #5A189A;
-  --linear-bottom: #5A189A;
-  --linear-top: #9D4EDD;
-  --blur-circle: #5a189a;
-  --white-circle: #7b2cbf;
-  --button-bg: #3c096c;
-  --bottom-hover: #7b2cbf;
-  --start-btn1: #10002b;
-  --start-btn2: #372591;
-}
-
 /* style for hamburger */
 
 .hamburger {
@@ -129,7 +93,7 @@ header {
   top: 0;
   z-index: 9;
   width: 100%;
-  background-color: var(--header);
+  background-color: #E27396;
 }
 
 .logo1{
@@ -148,7 +112,7 @@ hero {
   align-items: center;
   overflow: hidden;
   position: relative;
-  background-color: var(--bg1-color);
+  background-color: #FFA8DE;
 }
 
 .hey {
@@ -156,7 +120,7 @@ hero {
   top: 18vh;
   z-index: 10;
   font-size: clamp(1rem, 1.7vw, 4rem);
-  color:var(--hey-text);
+  color: #bb0022;
 }
 
 .title-text {
@@ -178,7 +142,7 @@ hero {
   top: 45%;
   z-index: 10;
   font-size: clamp(1rem, 1.7vw, 4rem);
-  color: var(--hey-text);
+  color: #b60021;
 }
 
 .logo2 {
@@ -259,8 +223,9 @@ hero {
   z-index: 9;
 
   background: linear-gradient(180deg,
-      var(--linear-top) 0%,
-       var(--linear-bottom) 20%);
+      #ffffff 0%,
+      #FFC2D1 40%,
+      #e6e6e6 100%);
   transition: transform 0.7s cubic-bezier(0.7, 0, 0.3, 1), filter 0.7s ease-out, top 0.7s ease-out, opacity 0.7s ease-in;
   transform-origin: center 20%;
     will-change: transform, filter;
@@ -295,7 +260,7 @@ hero {
 
   border-radius: 50%;
   /* z-index: 1; */
-  background-color: var(--white-circle);
+  background-color: #cdb4db;
   overflow: hidden;
   filter: blur(10px);
 
@@ -340,7 +305,7 @@ hero {
   transform: translateX(-50%);
   width: 200%;
   aspect-ratio: 1 / 1;
-  background-color: var(--blur-circle);
+  background-color: #cdb4db;
   border-radius: 50%;
   filter: blur(100px);
 }
@@ -366,7 +331,7 @@ hero {
   transition: 0.2s;
   animation:gradient_301 2s cubic-bezier(0, 0.85, 0, 0.99) infinite;
   border: double 4px transparent;
-  background-image: linear-gradient(var(--start-btn1), var(--start-btn2)),
+  background-image: linear-gradient(#fc33ff, #9a0036),
     linear-gradient(137.48deg,
       #ffdb3b 10%,
       #fe53bb 45%,
@@ -539,9 +504,9 @@ strong {
 }
 
 .button {
-  --bg: var(--button-bg);
-  --hover-bg: var(--button-hover);
-  --hover-text: var(--button-hover-text);
+  --bg: #a4133c;
+  --hover-bg: #ff90e8;
+  --hover-text: #000;
   color: #fff;
   cursor: pointer;
   border: 1px solid var(--bg);
@@ -638,63 +603,6 @@ a {
   }
 }
 
-/* The switch - the box around the slider */
-.switch {
-  font-size: 17px;
-  position: absolute;
-  display: inline-block;
-  width: 3.5em;
-  height: 2em;
-  z-index: 15;
-  top: 2%;
-  left: 6%;
-}
-
-/* Hide default HTML checkbox */
-.switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-/* The slider */
-.slider {
-  --background: #37b2ff;
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: var(--background);
-  transition: .5s;
-  border-radius: 30px;
-}
-
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 1.4em;
-  width: 1.4em;
-  border-radius: 50%;
-  left: 10%;
-  bottom: 15%;
-  box-shadow: inset 15px -4px 0px 15px #fff000;
-  /* background: var(--background); */
-  transition: .3s;
-  transform: translateX(100%);
-}
-
-input:checked + .slider {
-  background-color: #28096b;
-}
-
-input:checked + .slider:before {
-  transform: translateX(0);
-  box-shadow: inset 8px -4px 0px 0px #fff000;
-  
-}
-
 @media (max-width: 768px) {
   .H-circle {
     width: 200%;
@@ -767,9 +675,5 @@ input:checked + .slider:before {
   
   .p4{
     right: -100%;
-  }
-
-  .switch{
-    left: 20%;
   }
 }
